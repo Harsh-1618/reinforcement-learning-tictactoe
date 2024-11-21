@@ -56,6 +56,9 @@ class TicTacToe:
         self.img_x = pygame.transform.scale(self.img_x, (self.img_x_resize_value, self.img_x_resize_value))
         self.img_o = pygame.transform.scale(self.img_o, (self.img_o_resize_value, self.img_o_resize_value))
 
+        self.reset_button = Button(self.screen, "./images/dormant.png", "./images/play.png", (100,50), self.screen_width-(self.screen_width-self.screen_height)//2, self.screen_height//3, "Reset")
+        self.back_button = Button(self.screen, "./images/dormant.png", "./images/exit.png", (100,50), self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//3, "Back")
+
     @staticmethod
     def get_color(color):
         rgb = [int(color[1:3], 16), int(color[3:5], 16), int(color[5:], 16)]
@@ -136,10 +139,15 @@ class TicTacToe:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    return 0
+                    return (0,)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1: # 1 is for left mouse click
                         mouse_down_pos = event.pos
+
+                    if self.reset_button.check_for_click(event.pos):
+                        return 1, self.screen, self.clock, self.ttt_dim, self.screen_height, self.screen_width
+                    elif self.back_button.check_for_click(event.pos):
+                        return (2,)
 
             self.screen.fill("black")
 
@@ -148,6 +156,12 @@ class TicTacToe:
 
             self.render_xo()
             self.render_grid()
+
+            self.reset_button.render_button()
+            self.back_button.render_button()
+
+            self.reset_button.hover_detection(pygame.mouse.get_pos())
+            self.back_button.hover_detection(pygame.mouse.get_pos())
 
             pygame.display.flip()
 
@@ -207,12 +221,16 @@ if __name__ == "__main__":
         if button_value == 0:
             running = False
         elif button_value == 1:
-            ttt = TicTacToe(*ttt_blueprint)
-            ttt_value = ttt.run()
-            if ttt_value == 0:
-                running = False
-            elif ttt_value == 1:
-                pass
+            while True:
+                ttt = TicTacToe(*ttt_blueprint)
+                ttt_value, *ttt_blueprint = ttt.run()
+                if ttt_value == 0:
+                    running = False
+                    break
+                elif ttt_value == 1:
+                    continue
+                elif ttt_value == 2:
+                    break
         elif button_value == 2:
             pass
         elif button_value == 3:

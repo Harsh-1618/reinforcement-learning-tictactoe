@@ -14,12 +14,10 @@ class Button():
                 resize_dim,
                 x_pos,
                 y_pos,
-                text,
-                on_click_function):
+                text):
         self.screen = screen
         self.x_pos = x_pos
         self.y_pos = y_pos
-        self.on_click_function = on_click_function
 
         self.text = Button.button_font.render(text, True, "black")
         self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
@@ -39,7 +37,8 @@ class Button():
 
     def check_for_click(self, position):
         if position[0] in range(self.image_rect.left, self.image_rect.right) and position[1] in range(self.image_rect.top, self.image_rect.bottom):
-            self.on_click_function()
+            return True
+        return None
 
     def hover_detection(self, position):
         if position[0] in range(self.image_rect.left, self.image_rect.right) and position[1] in range(self.image_rect.top, self.image_rect.bottom):

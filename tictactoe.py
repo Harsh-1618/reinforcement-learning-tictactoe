@@ -129,18 +129,14 @@ class TicTacToe:
             self.angles[o_pos[0][i], o_pos[1][i]] = (self.angles[o_pos[0][i], o_pos[1][i]] + 1)%360
 
     def run(self):
-        running = True
         self.calculate_grid()
         
-        while running:
+        while True:
             mouse_down_pos = None
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    tq = pygame.mixer.Sound("./sounds/thank_you.wav")
-                    tq.play()
-                    time.sleep(tq.get_length()-0.7)
-                    running = False
+                    return 0
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1: # 1 is for left mouse click
                         mouse_down_pos = event.pos
@@ -157,8 +153,6 @@ class TicTacToe:
 
             self.clock.tick(60) # limits FPS to 60
 
-        pygame.quit()
-
 
 class MainScreen:
     def __init__(self, screen=None, clock=None, ttt_dim=None, screen_height=None, screen_width=None, window_icon="./images/main_icon.png",):
@@ -171,25 +165,23 @@ class MainScreen:
 
         pygame.display.set_icon(pygame.image.load(window_icon))
 
-        self.play_button = Button(self.screen, "./images/dormant.png", "./images/play.png", (201,101), self.screen_width//2, self.screen_height//4, "Play", lambda:print("play hit"))
-        self.options_button = Button(self.screen, "./images/dormant.png", "./images/options.png", (201,101), self.screen_width//2, 2*self.screen_height//4, "Options", lambda:print("options hit"))
-        self.exit_button = Button(self.screen, "./images/dormant.png", "./images/exit.png", (201,101), self.screen_width//2, 3*self.screen_height//4, "Exit", lambda:print("exit hit"))
+        self.play_button = Button(self.screen, "./images/dormant.png", "./images/play.png", (201,101), self.screen_width//2, self.screen_height//4, "Play")
+        self.options_button = Button(self.screen, "./images/dormant.png", "./images/options.png", (201,101), self.screen_width//2, 2*self.screen_height//4, "Options")
+        self.exit_button = Button(self.screen, "./images/dormant.png", "./images/exit.png", (201,101), self.screen_width//2, 3*self.screen_height//4, "Exit")
 
     def run(self):
-        running = True
-        
-        while running:
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    tq = pygame.mixer.Sound("./sounds/thank_you.wav")
-                    tq.play()
-                    time.sleep(tq.get_length()-0.7)
-                    running = False
+                    return (0,)
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.play_button.check_for_click(event.pos)
-                    self.options_button.check_for_click(event.pos)
-                    self.exit_button.check_for_click(event.pos)
+                    if self.play_button.check_for_click(event.pos):
+                        return 1, self.screen, self.clock, self.ttt_dim, self.screen_height, self.screen_width
+                    elif self.options_button.check_for_click(event.pos):
+                        return (2,)
+                    elif self.exit_button.check_for_click(event.pos):
+                        return (3,)
 
             self.screen.fill("black")
             self.play_button.render_button()
@@ -203,17 +195,34 @@ class MainScreen:
             pygame.display.flip()
             self.clock.tick(60)
 
-        pygame.quit()
-
 
 if __name__ == "__main__":
     pygame.init()
-    
+    running = True
+
+    while running:
+        ms = MainScreen()
+        button_value, *ttt_blueprint = ms.run()
+        
+        if button_value == 0:
+            running = False
+        elif button_value == 1:
+            ttt = TicTacToe(*ttt_blueprint)
+            ttt_value = ttt.run()
+            if ttt_value == 0:
+                running = False
+            elif ttt_value == 1:
+                pass
+        elif button_value == 2:
+            pass
+        elif button_value == 3:
+            tq = pygame.mixer.Sound("./sounds/thank_you.wav")
+            tq.play()
+            time.sleep(tq.get_length()-0.7)
+            running = False
     # SCREEN_HEIGHT = 480
     # SCREEN_WIDTH = 640
     # # SCREEN_HEIGHT = 640
     # # SCREEN_WIDTH = 1280
     # TICTACTOE_DIM = 3
-
-    ms = MainScreen()
-    ms.run()
+    pygame.quit()

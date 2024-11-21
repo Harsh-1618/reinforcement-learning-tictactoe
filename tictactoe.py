@@ -38,10 +38,9 @@ class TicTacToe:
         self.clock = pygame.time.Clock()
         self.row_grid_color = "#101010"
         self.col_grid_color = "#101010"
-        self.logic_grid = np.zeros((self.ttt_dim, self.ttt_dim)) # 1 for 'X', -1 for 'O' and 0 if position is available
+        self.logic_grid = np.zeros((self.ttt_dim, self.ttt_dim), dtype=np.int8) # 1 for 'X', -1 for 'O' and 0 if position is available
         self.player = 1
-        self.angle_x = 0
-        self.angle_o = 0
+        self.angles = np.zeros((self.ttt_dim, self.ttt_dim), dtype=np.int16)
 
         # size reduction factor to compensate for grid line width and image rotation
         self.reduction_factor_x = 25 - 3*(self.ttt_dim-3) # 'X' is big and has sharp corners which interfere with other 'X', so bigger reduction
@@ -109,23 +108,22 @@ class TicTacToe:
                 self.player = -self.player
 
     def render_xo(self):
-        img_x = pygame.transform.rotate(self.img_x, self.angle_x) # don't store in self.img_x, cause it'll then override self.img_x with a new rotation.
-        img_o = pygame.transform.rotate(self.img_o, self.angle_o)
         x_pos = np.where(self.logic_grid==1)
         o_pos = np.where(self.logic_grid==-1)
 
         for i in range(len(x_pos[0])):
             loc = (self.width_intervals[x_pos[1][i]]+((TicTacToe.grid_line_width+self.reduction_factor_x)//2), self.height_intervals[x_pos[0][i]]+((TicTacToe.grid_line_width+self.reduction_factor_x)//2))
+            img_x = pygame.transform.rotate(self.img_x, self.angles[x_pos[0][i], x_pos[1][i]]) # counter-clockwise rotation
             img_x_rect = img_x.get_rect(center=(loc[0]+self.img_x_resize_value//2, loc[1]+self.img_x_resize_value//2))
             self.screen.blit(img_x, img_x_rect)
+            self.angles[x_pos[0][i], x_pos[1][i]] = (self.angles[x_pos[0][i], x_pos[1][i]] + 1)%360
 
         for i in range(len(o_pos[0])):
             loc = (self.width_intervals[o_pos[1][i]]+((TicTacToe.grid_line_width+self.reduction_factor_o)//2), self.height_intervals[o_pos[0][i]]+((TicTacToe.grid_line_width+self.reduction_factor_o)//2))
+            img_o = pygame.transform.rotate(self.img_o, -self.angles[o_pos[0][i], o_pos[1][i]]) # clockwise rotation
             img_o_rect = img_o.get_rect(center=(loc[0]+self.img_o_resize_value//2, loc[1]+self.img_o_resize_value//2))
             self.screen.blit(img_o, img_o_rect)
-
-        self.angle_x += 1
-        self.angle_o -= 1
+            self.angles[o_pos[0][i], o_pos[1][i]] = (self.angles[o_pos[0][i], o_pos[1][i]] + 1)%360
 
     def run(self):
         running = True

@@ -72,18 +72,18 @@ class TicTacToe:
         self.cols = []
     
         row_start = self.screen_height//self.ttt_dim
-        width_blank_space_start = (self.screen_width-self.screen_height)//2 # laying foundation of the square space we will be rendering our grid in.
+        width_blank_space_start = self.screen_width-self.screen_height
 
         for i in range(self.ttt_dim-1):
             self.rows.append(
-                ((width_blank_space_start+TicTacToe.width_padding, row_start*(i+1)),
+                ((TicTacToe.width_padding, row_start*(i+1)),
                 (self.screen_width-width_blank_space_start-TicTacToe.width_padding, row_start*(i+1))))
             self.cols.append(
-                ((width_blank_space_start+row_start*(i+1), TicTacToe.height_padding),
-                (width_blank_space_start+row_start*(i+1), self.screen_height-TicTacToe.height_padding)))
+                ((row_start*(i+1), TicTacToe.height_padding),
+                (row_start*(i+1), self.screen_height-TicTacToe.height_padding)))
 
         self.height_intervals = [0] + [row[0][1] for row in self.rows] + [self.screen_height]
-        self.width_intervals = [width_blank_space_start] + [col[0][0] for col in self.cols] + [self.screen_width-width_blank_space_start]
+        self.width_intervals = [0] + [col[0][0] for col in self.cols] + [self.screen_width-width_blank_space_start]
 
     def render_grid(self):
         self.row_grid_color = TicTacToe.get_color(self.row_grid_color)
@@ -156,7 +156,7 @@ class TicTacToe:
 
 class MainScreen:
     def __init__(self, screen=None, clock=None, ttt_dim=None, screen_height=None, screen_width=None, window_icon="./images/main_icon.png",):
-        self.ttt_dim = 3 if ttt_dim is None else ttt_dim
+        self.ttt_dim = 9 if ttt_dim is None else ttt_dim
         self.screen_height = 480 if screen_height is None else screen_height
         self.screen_width = 640 if screen_width is None else screen_width
 

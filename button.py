@@ -9,11 +9,11 @@ class Button():
 
     def __init__(self,
                 screen,
+                x_pos,
+                y_pos,
                 image_path,
                 hover_image_path,
                 resize_dim,
-                x_pos,
-                y_pos,
                 text):
         self.screen = screen
         self.x_pos = x_pos

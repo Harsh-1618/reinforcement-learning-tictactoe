@@ -56,8 +56,8 @@ class TicTacToe:
         self.img_x = pygame.transform.scale(self.img_x, (self.img_x_resize_value, self.img_x_resize_value))
         self.img_o = pygame.transform.scale(self.img_o, (self.img_o_resize_value, self.img_o_resize_value))
 
-        self.reset_button = Button(self.screen, "./images/dormant.png", "./images/play.png", (100,50), self.screen_width-(self.screen_width-self.screen_height)//2, self.screen_height//3, "Reset")
-        self.back_button = Button(self.screen, "./images/dormant.png", "./images/exit.png", (100,50), self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//3, "Back")
+        self.reset_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, self.screen_height//3, "./images/dormant.png", "./images/play.png", (100,50), "Reset")
+        self.back_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//3, "./images/dormant.png", "./images/exit.png", (100,50), "Back")
 
     @staticmethod
     def get_color(color):
@@ -168,20 +168,16 @@ class TicTacToe:
             self.clock.tick(60) # limits FPS to 60
 
 
-class MainScreen:
-    def __init__(self, screen=None, clock=None, ttt_dim=None, screen_height=None, screen_width=None, window_icon="./images/main_icon.png",):
-        self.ttt_dim = 9 if ttt_dim is None else ttt_dim
-        self.screen_height = 480 if screen_height is None else screen_height
-        self.screen_width = 640 if screen_width is None else screen_width
+class MenuMaker:
+    def __init__(self, screen, clock, ttt_dim, screen_height, screen_width, btn_args, rtn_values):
+        self.screen = screen
+        self.clock = clock
+        self.screen_height = screen_height
+        self.screen_width = screen_width
+        self.rtn_values = rtn_values
 
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height)) if screen is None else screen
-        self.clock = pygame.time.Clock() if clock is None else clock
-
-        pygame.display.set_icon(pygame.image.load(window_icon))
-
-        self.play_button = Button(self.screen, "./images/dormant.png", "./images/play.png", (201,101), self.screen_width//2, self.screen_height//4, "Play")
-        self.options_button = Button(self.screen, "./images/dormant.png", "./images/options.png", (201,101), self.screen_width//2, 2*self.screen_height//4, "Options")
-        self.exit_button = Button(self.screen, "./images/dormant.png", "./images/exit.png", (201,101), self.screen_width//2, 3*self.screen_height//4, "Exit")
+        self.buttons = [Button(self.screen, self.screen_width//2, (i+1)*self.screen_height//(len(btn_args)+1), "./images/dormant.png", *btn_args[i]) for i in (range(len(btn_args)))]
+        self.return_stuff = [(rtn_values[i], self.screen, self.clock, ttt_dim, self.screen_height, self.screen_width) for i in (range(len(rtn_values)))]
 
     def run(self):
         while True:
@@ -190,57 +186,130 @@ class MainScreen:
                     return (0,)
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.play_button.check_for_click(event.pos):
-                        return 1, self.screen, self.clock, self.ttt_dim, self.screen_height, self.screen_width
-                    elif self.options_button.check_for_click(event.pos):
-                        return (2,)
-                    elif self.exit_button.check_for_click(event.pos):
-                        return (3,)
+                    for i in range(len(self.buttons)):
+                        if self.buttons[i].check_for_click(event.pos):
+                            return self.return_stuff[i]
 
             self.screen.fill("black")
-            self.play_button.render_button()
-            self.options_button.render_button()
-            self.exit_button.render_button()
-
-            self.play_button.hover_detection(pygame.mouse.get_pos())
-            self.options_button.hover_detection(pygame.mouse.get_pos())
-            self.exit_button.hover_detection(pygame.mouse.get_pos())
+            for button in self.buttons:
+                button.render_button()
+                button.hover_detection(pygame.mouse.get_pos())
 
             pygame.display.flip()
             self.clock.tick(60)
 
 
+class MainMenu(MenuMaker):
+    def __init__(self, ttt_dim, screen_height, screen_width, btn_args, rtn_values, window_icon="./images/main_icon.png"):
+        self.ttt_dim = 3 if ttt_dim is None else ttt_dim
+        self.screen_height = 480 if screen_height is None else screen_height
+        self.screen_width = 640 if screen_width is None else screen_width
+
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+        self.clock = pygame.time.Clock()
+
+        pygame.display.set_icon(pygame.image.load(window_icon))
+
+        super().__init__(self.screen, self.clock, self.ttt_dim, self.screen_height, self.screen_width, btn_args, rtn_values)
+
+
+def make_btn_args(hover_img_path, resize_dim, text):
+    if (diff := len(text)-len(hover_img_path)) != 0:
+        hover_img_path = [hover_img_path[-2]]*(diff+1) + [hover_img_path[-1]]
+
+    if len(resize_dim) == 1:
+        resize_dim = [resize_dim[0]]*len(text)
+
+    return tuple(zip(hover_img_path, resize_dim, text))
+
+def get_all_menu_args():
+    main_hover_img_path = ("./images/play.png", "./images/options.png", "./images/exit.png")
+    main_resize_dim = ((201,101),)
+    main_text = ("Play", "Options", "Exit")
+    main_btn_args = make_btn_args(main_hover_img_path, main_resize_dim, main_text)
+    main_rtn_values = (1, 2, -1)
+
+    options_hover_img_path = ("./images/options.png", "./images/exit.png")
+    options_resize_dim = ((301,101), (301,101), (201,101))
+    options_text = ("Set Grid Dimension", "Set Game Resolution", "Back")
+    options_btn_args = make_btn_args(options_hover_img_path, options_resize_dim, options_text)
+    options_rtn_values = (1, 2, -1)
+
+    grid_hover_img_path = ("./images/options.png", "./images/exit.png")
+    grid_resize_dim = ((201,51),)
+    grid_text = ("3x3", "4x4", "5x5", "6x6", "7x7", "8x8", "9x9", "Back")
+    grid_btn_args = make_btn_args(grid_hover_img_path, grid_resize_dim, grid_text)
+    grid_rtn_values = (3, 4, 5, 6, 7, 8, 9, -1)
+
+    res_hover_img_path = ("./images/options.png", "./images/exit.png")
+    res_resize_dim = ((201,51),)
+    res_text = ("640x480", "720x600", "1280x640", "1280x720", "1920x1080", "Back")
+    res_btn_args = make_btn_args(res_hover_img_path, res_resize_dim, res_text)
+    res_rtn_values = ((640,480), (720,600), (1280,640), (1280,720), (1920,1080), -1)
+
+    return (main_btn_args, main_rtn_values), (options_btn_args, options_rtn_values), (grid_btn_args, grid_rtn_values), (res_btn_args, res_rtn_values)
+
+
 if __name__ == "__main__":
     pygame.init()
-    running = True
+    main_args, options_args, grid_args, res_args = get_all_menu_args()
+    
+    ttt_dim = None
+    screen_height = None
+    screen_width = None
 
+    running = True
     while running:
-        ms = MainScreen()
-        button_value, *ttt_blueprint = ms.run()
-        
-        if button_value == 0:
+        mm = MainMenu(ttt_dim, screen_height, screen_width, *main_args)
+        mm_bv, *ttt_blueprint = mm.run() # mm_bv -> main menu button value
+        if mm_bv == 0:
             running = False
-        elif button_value == 1:
-            while True:
-                ttt = TicTacToe(*ttt_blueprint)
-                ttt_value, *ttt_blueprint = ttt.run()
-                if ttt_value == 0:
-                    running = False
-                    break
-                elif ttt_value == 1:
-                    continue
-                elif ttt_value == 2:
-                    break
-        elif button_value == 2:
-            pass
-        elif button_value == 3:
-            tq = pygame.mixer.Sound("./sounds/thank_you.wav")
+        elif mm_bv == -1:
+            tq = pygame.mixer.Sound("./sounds/thank_you.wav") # tq -> thank you
             tq.play()
             time.sleep(tq.get_length()-0.7)
             running = False
-    # SCREEN_HEIGHT = 480
-    # SCREEN_WIDTH = 640
-    # # SCREEN_HEIGHT = 640
-    # # SCREEN_WIDTH = 1280
-    # TICTACTOE_DIM = 3
+        elif mm_bv == 1:
+            while True:
+                ttt = TicTacToe(*ttt_blueprint)
+                ttt_bv, *ttt_blueprint = ttt.run()
+                if ttt_bv == 0:
+                    running = False
+                    break
+                elif ttt_bv == 1:
+                    continue
+                elif ttt_bv == 2:
+                    break
+        elif mm_bv == 2:
+            while True:
+                om = MenuMaker(*ttt_blueprint, *options_args)
+                om_bv, *ttt_blueprint = om.run()
+                if om_bv == 0:
+                    running = False
+                    break
+                elif om_bv == -1:
+                    break
+                elif om_bv == 1:
+                    gm = MenuMaker(*ttt_blueprint, *grid_args)
+                    gm_bv, *ttt_blueprint = gm.run()
+                    if gm_bv == 0:
+                        running = False
+                        break
+                    elif gm_bv == -1:
+                        continue
+                    else:
+                        ttt_dim = gm_bv
+                        break
+                elif om_bv == 2:
+                    rm = MenuMaker(*ttt_blueprint, *res_args)
+                    rm_bv, *ttt_blueprint = rm.run()
+                    if rm_bv == 0:
+                        running = False
+                        break
+                    elif rm_bv == -1:
+                        continue
+                    else:
+                        screen_width, screen_height = rm_bv
+                        break
+
     pygame.quit()

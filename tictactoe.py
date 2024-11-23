@@ -20,6 +20,14 @@ class TicTacToe:
     width_padding = ttt_constants.WIDTH_PADDING
     grid_line_width = ttt_constants.GRID_LINE_WIDTH
 
+    click_sound_x = pygame.mixer.Sound("./sounds/click_x.wav")
+    click_sound_o = pygame.mixer.Sound("./sounds/click_o.wav")
+    win_sound_x = pygame.mixer.Sound("./sounds/win_x.wav")
+    win_sound_o = pygame.mixer.Sound("./sounds/win_o.wav")
+    forward_click_sound = pygame.mixer.Sound("./sounds/click_forward.wav")
+    backward_click_sound = pygame.mixer.Sound("./sounds/click_backward.wav")
+    button_hover_sound = pygame.mixer.Sound("./sounds/button_hover.wav")
+
     def __init__(self,
                 screen,
                 clock,
@@ -56,8 +64,11 @@ class TicTacToe:
         self.img_x = pygame.transform.scale(self.img_x, (self.img_x_resize_value, self.img_x_resize_value))
         self.img_o = pygame.transform.scale(self.img_o, (self.img_o_resize_value, self.img_o_resize_value))
 
-        self.reset_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, self.screen_height//3, "./images/dormant.png", "./images/play.png", (100,50), "Reset")
-        self.back_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//3, "./images/dormant.png", "./images/exit.png", (100,50), "Back")
+        self.reset_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, self.screen_height//3, "./images/dormant.png", "./images/play.png", (int(100*self.screen_width/640), int(50*self.screen_height/480)), "Reset")
+        self.back_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//3, "./images/dormant.png", "./images/exit.png", (int(100*self.screen_width/640), int(50*self.screen_height/480)), "Back")
+
+        self.reset_hover_detection = [0,0] # used to detect the moment mouse hovers on reset button to play hover sound
+        self.back_hover_detection = [0,0]
 
     @staticmethod
     def get_color(color):
@@ -111,6 +122,10 @@ class TicTacToe:
         if (row_val is not None) and (col_val is not None):
             if self.logic_grid[row_val][col_val] == 0:
                 self.logic_grid[row_val][col_val] = self.player
+                if self.player == 1:
+                    TicTacToe.click_sound_x.play()
+                else:
+                    TicTacToe.click_sound_o.play()
                 self.player = -self.player
 
     def render_xo(self):
@@ -145,8 +160,10 @@ class TicTacToe:
                         mouse_down_pos = event.pos
 
                     if self.reset_button.check_for_click(event.pos):
+                        TicTacToe.forward_click_sound.play()
                         return 1, self.screen, self.clock, self.ttt_dim, self.screen_height, self.screen_width
                     elif self.back_button.check_for_click(event.pos):
+                        TicTacToe.backward_click_sound.play()
                         return (2,)
 
             self.screen.fill("black")
@@ -159,9 +176,15 @@ class TicTacToe:
 
             self.reset_button.render_button()
             self.back_button.render_button()
-
-            self.reset_button.hover_detection(pygame.mouse.get_pos())
-            self.back_button.hover_detection(pygame.mouse.get_pos())
+            
+            self.reset_hover_detection[0] = self.reset_hover_detection[1]
+            self.reset_hover_detection[1] = self.reset_button.hover_detection(pygame.mouse.get_pos())
+            if self.reset_hover_detection == [0,1]:
+                TicTacToe.button_hover_sound.play()
+            self.back_hover_detection[0] = self.back_hover_detection[1]
+            self.back_hover_detection[1] = self.back_button.hover_detection(pygame.mouse.get_pos())
+            if self.back_hover_detection == [0,1]:
+                TicTacToe.button_hover_sound.play()
 
             pygame.display.flip()
 
@@ -169,6 +192,10 @@ class TicTacToe:
 
 
 class MenuMaker:
+    forward_click_sound = pygame.mixer.Sound("./sounds/click_forward.wav")
+    backward_click_sound = pygame.mixer.Sound("./sounds/click_backward.wav")
+    button_hover_sound = pygame.mixer.Sound("./sounds/button_hover.wav")
+
     def __init__(self, screen, clock, ttt_dim, screen_height, screen_width, btn_args, rtn_values):
         self.screen = screen
         self.clock = clock
@@ -176,8 +203,14 @@ class MenuMaker:
         self.screen_width = screen_width
         self.rtn_values = rtn_values
 
-        self.buttons = [Button(self.screen, self.screen_width//2, (i+1)*self.screen_height//(len(btn_args)+1), "./images/dormant.png", *btn_args[i]) for i in (range(len(btn_args)))]
+        self.button_res_resize_height = self.screen_height/480 # 640x480 standard resolution
+        self.button_res_resize_width = self.screen_width/640
+
+        self.buttons = [Button(self.screen, self.screen_width//2, (i+1)*self.screen_height//(len(btn_args)+1), "./images/dormant.png", btn_args[i][0], (int(btn_args[i][1][0]*self.button_res_resize_width), int(btn_args[i][1][1]*self.button_res_resize_height)), btn_args[i][2]) for i in (range(len(btn_args)))]
         self.return_stuff = [(rtn_values[i], self.screen, self.clock, ttt_dim, self.screen_height, self.screen_width) for i in (range(len(rtn_values)))]
+
+        self.hover_sound_list = [[0,0] for i in range(len(self.buttons))] # used to detect the moment mouse hovers on any button to play hover sound
+        # if we play when mouse is on button, then it will play the sound indefinately till the mouse is on the button.
 
     def run(self):
         while True:
@@ -188,12 +221,19 @@ class MenuMaker:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     for i in range(len(self.buttons)):
                         if self.buttons[i].check_for_click(event.pos):
+                            if (i == len(self.buttons)-1) and (type(self)==MenuMaker):
+                                MenuMaker.backward_click_sound.play()
+                            else:
+                                MenuMaker.forward_click_sound.play()
                             return self.return_stuff[i]
 
             self.screen.fill("black")
-            for button in self.buttons:
-                button.render_button()
-                button.hover_detection(pygame.mouse.get_pos())
+            for i in range(len(self.buttons)):
+                self.buttons[i].render_button()
+                self.hover_sound_list[i][0] = self.hover_sound_list[i][1]
+                self.hover_sound_list[i][1] = self.buttons[i].hover_detection(pygame.mouse.get_pos())
+                if self.hover_sound_list[i] == [0,1]:
+                    MenuMaker.button_hover_sound.play()
 
             pygame.display.flip()
             self.clock.tick(60)
@@ -243,9 +283,9 @@ def get_all_menu_args():
 
     res_hover_img_path = ("./images/options.png", "./images/exit.png")
     res_resize_dim = ((201,51),)
-    res_text = ("640x480", "720x600", "1280x640", "1280x720", "1920x1080", "Back")
+    res_text = ("640x480", "720x540", "800x600", "1280x640", "1280x720", "1920x1080", "Back")
     res_btn_args = make_btn_args(res_hover_img_path, res_resize_dim, res_text)
-    res_rtn_values = ((640,480), (720,600), (1280,640), (1280,720), (1920,1080), -1)
+    res_rtn_values = ((640,480), (720,540), (800,600), (1280,640), (1280,720), (1920,1080), -1)
 
     return (main_btn_args, main_rtn_values), (options_btn_args, options_rtn_values), (grid_btn_args, grid_rtn_values), (res_btn_args, res_rtn_values)
 

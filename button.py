@@ -43,5 +43,7 @@ class Button():
     def hover_detection(self, position):
         if position[0] in range(self.image_rect.left, self.image_rect.right) and position[1] in range(self.image_rect.top, self.image_rect.bottom):
             self.rendered_image = self.hover_image
+            return 1
         else:
             self.rendered_image = self.image
+            return 0

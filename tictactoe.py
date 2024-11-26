@@ -137,6 +137,9 @@ class TicTacToe:
         for col in self.cols:
             pygame.draw.line(self.screen, self.col_grid_color, start_pos=col[0], end_pos=col[1], width=TicTacToe.grid_line_width)
 
+    def inf_ttt_extension(self):
+        pass
+
     def add_xo_to_grid(self, mouse_down_pos):
         row_val = None
         col_val = None
@@ -151,6 +154,12 @@ class TicTacToe:
         if (row_val is not None) and (col_val is not None):
             if (self.logic_grid[row_val][col_val] == 0) and (not self.is_game_terminated):
                 self.logic_grid[row_val][col_val] = self.player
+
+                # for infinite ttt
+                self.row_val = row_val
+                self.col_val = col_val
+                self.inf_ttt_extension()
+
                 if self.player == 1:
                     TicTacToe.sounds[0].play()
                 else:
@@ -191,6 +200,11 @@ class TicTacToe:
             self.screen.blit(img_o, img_o_rect)
             self.angles[o_pos[0][i], o_pos[1][i]] = (self.angles[o_pos[0][i], o_pos[1][i]] + 1)%360
 
+    def reset_parameters(self):
+        self.logic_grid[:] = 0
+        self.is_game_terminated = False
+        self.player = 1
+
     def run(self):
         self.calculate_grid()
         
@@ -206,9 +220,7 @@ class TicTacToe:
 
                     if self.reset_button.check_for_click(event.pos):
                         TicTacToe.sounds[5].play()
-                        self.logic_grid[:] = 0
-                        self.is_game_terminated = False
-                        self.player = 1
+                        self.reset_parameters()
                     elif self.back_button.check_for_click(event.pos):
                         TicTacToe.sounds[6].play()
                         return (1,)
@@ -247,46 +259,16 @@ class InfiniteTicTacToe(TicTacToe):
         self.order_grid = -np.ones((self.ttt_dim, self.ttt_dim), dtype=np.int8)
         self.current_number = 0
     
-    def add_xo_to_grid(self, mouse_down_pos):
-        row_val = None
-        col_val = None
+    def inf_ttt_extension(self):
+        prev_position = np.where(self.order_grid == self.current_number)
+        if len(prev_position[0]) != 0:
+            self.order_grid[prev_position[0][0]][prev_position[1][0]] = -1
+            self.logic_grid[prev_position[0][0]][prev_position[1][0]] = 0
 
-        for i in range(len(self.height_intervals)-1):
-            if (mouse_down_pos[1] > self.height_intervals[i]) and (mouse_down_pos[1] < self.height_intervals[i+1]):
-                row_val = i
-        for i in range(len(self.width_intervals)-1):
-            if (mouse_down_pos[0] > self.width_intervals[i]) and (mouse_down_pos[0] < self.width_intervals[i+1]):
-                col_val = i
+        self.order_grid[self.row_val][self.col_val] = self.current_number
+        self.current_number = (self.current_number + 1) % (self.ttt_dim*(self.ttt_dim-1))
 
-        if (row_val is not None) and (col_val is not None):
-            if (self.logic_grid[row_val][col_val] == 0) and (not self.is_game_terminated):
-                self.logic_grid[row_val][col_val] = self.player
-
-                prev_position = np.where(self.order_grid == self.current_number)
-                if len(prev_position[0]) != 0:
-                    self.order_grid[prev_position[0][0]][prev_position[1][0]] = -1
-                    self.logic_grid[prev_position[0][0]][prev_position[1][0]] = 0
-
-                self.order_grid[row_val][col_val] = self.current_number
-                self.current_number = (self.current_number + 1) % (self.ttt_dim*(self.ttt_dim-1))
-                if self.player == 1:
-                    super().sounds[0].play()
-                else:
-                    super().sounds[1].play()
-
-                self.check_win(row_val, col_val)
-                if self.is_game_terminated:
-                    if self.player == 1:
-                        super().sounds[2].play().fadeout(3000)
-                        self.wins_x += 1
-                    else:
-                        super().sounds[3].play().fadeout(3000)
-                        self.wins_o += 1
-                    self.set_label_xo_color()
-                    self.label_x = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, self.screen_height//6, self.label_x_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"X wins: {self.wins_x}")
-                    self.label_o = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//6, self.label_o_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"O wins: {self.wins_o}")
-                elif len(np.where(self.logic_grid==0)[0]) == 0:
-                    super().sounds[4].play()
-                    self.ties += 1
-                    self.label_ties = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 3*self.screen_height//6, "white", (int(120*self.screen_width/640), int(50*self.screen_height/480)), f"Ties: {self.ties}")
-                self.player = -self.player
+    def reset_parameters(self):
+        super().reset_parameters()
+        self.order_grid[:] = -1
+        self.current_number = 0

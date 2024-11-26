@@ -16,7 +16,14 @@ class MenuMaker:
     img_x = pygame.image.load("./images/x_transparent_edited.png")
     img_o = pygame.image.load("./images/o_transparent_edited.png")
 
-    def __init__(self, screen, clock, ttt_dim, screen_height, screen_width, btn_args, rtn_values):
+    def __init__(self,
+                screen,
+                clock,
+                ttt_dim,
+                screen_height,
+                screen_width,
+                btn_args,
+                rtn_values):
         self.screen = screen
         self.clock = clock
         self.screen_height = screen_height
@@ -90,7 +97,14 @@ class MenuMaker:
 
 
 class MainMenu(MenuMaker):
-    def __init__(self, ttt_dim, screen_height, screen_width, btn_args, rtn_values, window_icon="./images/main_icon.png"):
+    def __init__(self,
+                ttt_dim,
+                screen_height,
+                screen_width,
+                btn_args,
+                rtn_values,
+                window_name="TicTacToe",
+                window_icon="./images/main_icon.png"):
         self.ttt_dim = 3 if ttt_dim is None else ttt_dim
         self.screen_height = 480 if screen_height is None else screen_height
         self.screen_width = 640 if screen_width is None else screen_width
@@ -98,6 +112,7 @@ class MainMenu(MenuMaker):
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         self.clock = pygame.time.Clock()
 
+        pygame.display.set_caption(window_name)
         pygame.display.set_icon(pygame.image.load(window_icon))
 
         super().__init__(self.screen, self.clock, self.ttt_dim, self.screen_height, self.screen_width, btn_args, rtn_values)

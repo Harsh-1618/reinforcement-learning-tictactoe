@@ -1,5 +1,7 @@
 from os import environ
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = '1'
+import random
+import time
 import pygame
 from utils import Button
 
@@ -10,6 +12,9 @@ class MenuMaker:
     sounds = (pygame.mixer.Sound("./sounds/click_forward.wav"),
             pygame.mixer.Sound("./sounds/click_backward.wav"),
             pygame.mixer.Sound("./sounds/button_hover.wav"))
+
+    img_x = pygame.image.load("./images/x_transparent_edited.png")
+    img_o = pygame.image.load("./images/o_transparent_edited.png")
 
     def __init__(self, screen, clock, ttt_dim, screen_height, screen_width, btn_args, rtn_values):
         self.screen = screen
@@ -27,7 +32,31 @@ class MenuMaker:
         self.hover_sound_list = [[0,0] for i in range(len(self.buttons))] # used to detect the moment mouse hovers on any button to play hover sound
         # if we play when mouse is on button, then it will play the sound indefinately till the mouse is on the button.
 
+        self.shower_xo = []
+
+    def create_new_shower(self):
+        num_new_xo = random.randint(3, 8)
+        for i in range(num_new_xo):
+            img = MenuMaker.img_x if random.randint(0, 1) == 1 else MenuMaker.img_o
+            height = random.randint(50, 100)
+            self.shower_xo.append([-height,
+                                random.randint(0, self.screen_width-height),
+                                pygame.transform.scale(img, (height, height)),
+                                random.randint(3,5)]) # height, width, img, fall speed
+
+        temp_list = [] # deleting those elements which have gone past screen height
+        for i in range(len(self.shower_xo)):
+            if self.shower_xo[i][0] < self.screen_height:
+                temp_list.append(self.shower_xo[i])
+        self.shower_xo = temp_list.copy()
+
+    def xo_shower(self):
+        for i in range(len(self.shower_xo)):
+            self.screen.blit(self.shower_xo[i][2], (self.shower_xo[i][1], self.shower_xo[i][0]))
+            self.shower_xo[i][0] = self.shower_xo[i][0] + self.shower_xo[i][3]
+
     def run(self):
+        start_time = time.perf_counter()
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -43,12 +72,18 @@ class MenuMaker:
                             return self.return_stuff[i]
 
             self.screen.fill("black")
+            self.xo_shower()
+
             for i in range(len(self.buttons)):
                 self.buttons[i].render_button()
                 self.hover_sound_list[i][0] = self.hover_sound_list[i][1]
                 self.hover_sound_list[i][1] = self.buttons[i].hover_detection(pygame.mouse.get_pos())
                 if self.hover_sound_list[i] == [0,1]:
                     MenuMaker.sounds[2].play()
+
+            if time.perf_counter() - start_time > 0.5:
+                start_time = time.perf_counter()
+                self.create_new_shower()
 
             pygame.display.flip()
             self.clock.tick(60)

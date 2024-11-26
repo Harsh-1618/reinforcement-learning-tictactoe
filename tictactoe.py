@@ -4,7 +4,7 @@ import time
 import random
 import pygame
 import numpy as np
-from button import Button
+from utils import Button, Label
 
 
 class TictactoeConstants:
@@ -65,9 +65,18 @@ class TicTacToe:
         self.img_o = pygame.image.load(img_o_path)
         self.img_x = pygame.transform.scale(self.img_x, (self.img_x_resize_value, self.img_x_resize_value))
         self.img_o = pygame.transform.scale(self.img_o, (self.img_o_resize_value, self.img_o_resize_value))
+        
+        self.wins_x = 0
+        self.wins_o = 0
+        self.ties = 0
+        self.label_x_color = "white"
+        self.label_o_color = "white"
+        self.label_x = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, self.screen_height//6, self.label_x_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"X wins: {self.wins_x}")
+        self.label_o = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//6, self.label_o_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"O wins: {self.wins_o}")
+        self.label_ties = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 3*self.screen_height//6, "white", (int(120*self.screen_width/640), int(50*self.screen_height/480)), f"Ties: {self.ties}")
 
-        self.reset_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, self.screen_height//3, "./images/dormant.png", "./images/play.png", (int(100*self.screen_width/640), int(50*self.screen_height/480)), "Reset")
-        self.back_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//3, "./images/dormant.png", "./images/exit.png", (int(100*self.screen_width/640), int(50*self.screen_height/480)), "Back")
+        self.reset_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 4*self.screen_height//6, "./images/dormant.png", "./images/play.png", (int(100*self.screen_width/640), int(50*self.screen_height/480)), "Reset")
+        self.back_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 5*self.screen_height//6, "./images/dormant.png", "./images/exit.png", (int(100*self.screen_width/640), int(50*self.screen_height/480)), "Back")
 
         self.reset_hover_detection = [0,0] # used to detect the moment mouse hovers on reset button to play hover sound
         self.back_hover_detection = [0,0]
@@ -82,6 +91,17 @@ class TicTacToe:
         result = f"#{hex(rgb[0])}{hex(rgb[1])}{hex(rgb[2])}"
 
         return result.replace("0x", "")
+
+    def set_label_xo_color(self):
+        if self.wins_x == self.wins_o:
+            self.label_x_color = "white"
+            self.label_o_color = "white"
+        elif self.wins_x > self.wins_o:
+            self.label_x_color = "green"
+            self.label_o_color = "red"
+        else:
+            self.label_x_color = "red"
+            self.label_o_color = "green"
 
     def check_win(self, row_val, col_val):
         self.is_game_terminated = np.sum(self.logic_grid[row_val,:]) == self.player * self.ttt_dim or \
@@ -137,11 +157,19 @@ class TicTacToe:
 
                 self.check_win(row_val, col_val)
                 if self.is_game_terminated:
-                    TicTacToe.sounds[2].play().fadeout(3000) if self.player == 1 else TicTacToe.sounds[3].play().fadeout(3000)
-
-                if len(np.where(self.logic_grid==0)[0]) == 0:
+                    if self.player == 1:
+                        TicTacToe.sounds[2].play().fadeout(3000)
+                        self.wins_x += 1
+                    else:
+                        TicTacToe.sounds[3].play().fadeout(3000)
+                        self.wins_o += 1
+                    self.set_label_xo_color()
+                    self.label_x = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, self.screen_height//6, self.label_x_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"X wins: {self.wins_x}")
+                    self.label_o = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//6, self.label_o_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"O wins: {self.wins_o}")
+                elif len(np.where(self.logic_grid==0)[0]) == 0:
                     TicTacToe.sounds[4].play()
-
+                    self.ties += 1
+                    self.label_ties = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 3*self.screen_height//6, "white", (int(120*self.screen_width/640), int(50*self.screen_height/480)), f"Ties: {self.ties}")
                 self.player = -self.player
 
     def render_xo(self):
@@ -194,6 +222,9 @@ class TicTacToe:
 
             self.reset_button.render_button()
             self.back_button.render_button()
+            self.label_x.render_text()
+            self.label_o.render_text()
+            self.label_ties.render_text()
             
             self.reset_hover_detection[0] = self.reset_hover_detection[1]
             self.reset_hover_detection[1] = self.reset_button.hover_detection(pygame.mouse.get_pos())
@@ -295,13 +326,13 @@ def get_all_menu_args():
 
     grid_hover_img_path = ("./images/options.png", "./images/exit.png")
     grid_resize_dim = ((201,51),)
-    grid_text = ("3x3", "4x4", "5x5", "6x6", "7x7", "8x8", "9x9", "Back")
+    grid_text = ("3 x 3", "4 x 4", "5 x 5", "6 x 6", "7 x 7", "8 x 8", "9 x 9", "Back")
     grid_btn_args = make_btn_args(grid_hover_img_path, grid_resize_dim, grid_text)
     grid_rtn_values = (3, 4, 5, 6, 7, 8, 9, -1)
 
     res_hover_img_path = ("./images/options.png", "./images/exit.png")
     res_resize_dim = ((201,51),)
-    res_text = ("640x480", "720x540", "800x600", "1280x640", "1280x720", "1920x1080", "Back")
+    res_text = ("640 x 480", "720 x 540", "800 x 600", "1280 x 640", "1280 x 720", "1920 x 1080", "Back")
     res_btn_args = make_btn_args(res_hover_img_path, res_resize_dim, res_text)
     res_rtn_values = ((640,480), (720,540), (800,600), (1280,640), (1280,720), (1920,1080), -1)
 

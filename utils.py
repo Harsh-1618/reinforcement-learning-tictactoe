@@ -50,7 +50,7 @@ class Button():
 
 
 class Label:
-    text_font = pygame.font.Font("./fonts/tricky-jimmy/Tricky Jimmy.ttf", 30)
+    text_font = pygame.font.Font("./fonts/tricky-jimmy/Tricky Jimmy.otf", 30)
 
     def __init__(self, screen, x_pos, y_pos, font_color, resize_dim, text):
         self.screen = screen

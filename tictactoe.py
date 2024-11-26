@@ -20,13 +20,14 @@ class TicTacToe:
     width_padding = ttt_constants.WIDTH_PADDING
     grid_line_width = ttt_constants.GRID_LINE_WIDTH
 
-    click_sound_x = pygame.mixer.Sound("./sounds/click_x.wav")
-    click_sound_o = pygame.mixer.Sound("./sounds/click_o.wav")
-    win_sound_x = pygame.mixer.Sound("./sounds/win_x.wav")
-    win_sound_o = pygame.mixer.Sound("./sounds/win_o.wav")
-    forward_click_sound = pygame.mixer.Sound("./sounds/click_forward.wav")
-    backward_click_sound = pygame.mixer.Sound("./sounds/click_backward.wav")
-    button_hover_sound = pygame.mixer.Sound("./sounds/button_hover.wav")
+    sounds = (pygame.mixer.Sound("./sounds/click_x.wav"),
+            pygame.mixer.Sound("./sounds/click_o.wav"),
+            pygame.mixer.Sound("./sounds/win_x.wav"),
+            pygame.mixer.Sound("./sounds/win_o.wav"),
+            pygame.mixer.Sound("./sounds/tie.wav"),
+            pygame.mixer.Sound("./sounds/click_forward.wav"),
+            pygame.mixer.Sound("./sounds/click_backward.wav"),
+            pygame.mixer.Sound("./sounds/button_hover.wav"))
 
     def __init__(self,
                 screen,
@@ -50,6 +51,7 @@ class TicTacToe:
         self.row_grid_color = "#101010"
         self.col_grid_color = "#101010"
         self.logic_grid = np.zeros((self.ttt_dim, self.ttt_dim), dtype=np.int8) # 1 for 'X', -1 for 'O' and 0 if position is available
+        self.is_game_terminated = False
         self.player = 1
         self.angles = np.zeros((self.ttt_dim, self.ttt_dim), dtype=np.int16)
 
@@ -80,6 +82,12 @@ class TicTacToe:
         result = f"#{hex(rgb[0])}{hex(rgb[1])}{hex(rgb[2])}"
 
         return result.replace("0x", "")
+
+    def check_win(self, row_val, col_val):
+        self.is_game_terminated = np.sum(self.logic_grid[row_val,:]) == self.player * self.ttt_dim or \
+            np.sum(self.logic_grid[:,col_val]) == self.player * self.ttt_dim or \
+            np.sum(np.diag(np.flip(self.logic_grid, axis=0))) == self.player * self.ttt_dim or \
+            np.sum(np.diag(self.logic_grid)) == self.player * self.ttt_dim
 
     def calculate_grid(self):
         self.rows = []
@@ -120,12 +128,20 @@ class TicTacToe:
                 col_val = i
 
         if (row_val is not None) and (col_val is not None):
-            if self.logic_grid[row_val][col_val] == 0:
+            if (self.logic_grid[row_val][col_val] == 0) and (not self.is_game_terminated):
                 self.logic_grid[row_val][col_val] = self.player
                 if self.player == 1:
-                    TicTacToe.click_sound_x.play()
+                    TicTacToe.sounds[0].play()
                 else:
-                    TicTacToe.click_sound_o.play()
+                    TicTacToe.sounds[1].play()
+
+                self.check_win(row_val, col_val)
+                if self.is_game_terminated:
+                    TicTacToe.sounds[2].play().fadeout(3000) if self.player == 1 else TicTacToe.sounds[3].play().fadeout(3000)
+
+                if len(np.where(self.logic_grid==0)[0]) == 0:
+                    TicTacToe.sounds[4].play()
+
                 self.player = -self.player
 
     def render_xo(self):
@@ -160,11 +176,13 @@ class TicTacToe:
                         mouse_down_pos = event.pos
 
                     if self.reset_button.check_for_click(event.pos):
-                        TicTacToe.forward_click_sound.play()
-                        return 1, self.screen, self.clock, self.ttt_dim, self.screen_height, self.screen_width
+                        TicTacToe.sounds[5].play()
+                        self.logic_grid[:] = 0
+                        self.is_game_terminated = False
+                        self.player = 1
                     elif self.back_button.check_for_click(event.pos):
-                        TicTacToe.backward_click_sound.play()
-                        return (2,)
+                        TicTacToe.sounds[6].play()
+                        return (1,)
 
             self.screen.fill("black")
 
@@ -180,11 +198,11 @@ class TicTacToe:
             self.reset_hover_detection[0] = self.reset_hover_detection[1]
             self.reset_hover_detection[1] = self.reset_button.hover_detection(pygame.mouse.get_pos())
             if self.reset_hover_detection == [0,1]:
-                TicTacToe.button_hover_sound.play()
+                TicTacToe.sounds[7].play()
             self.back_hover_detection[0] = self.back_hover_detection[1]
             self.back_hover_detection[1] = self.back_button.hover_detection(pygame.mouse.get_pos())
             if self.back_hover_detection == [0,1]:
-                TicTacToe.button_hover_sound.play()
+                TicTacToe.sounds[7].play()
 
             pygame.display.flip()
 
@@ -192,9 +210,9 @@ class TicTacToe:
 
 
 class MenuMaker:
-    forward_click_sound = pygame.mixer.Sound("./sounds/click_forward.wav")
-    backward_click_sound = pygame.mixer.Sound("./sounds/click_backward.wav")
-    button_hover_sound = pygame.mixer.Sound("./sounds/button_hover.wav")
+    sounds = (pygame.mixer.Sound("./sounds/click_forward.wav"),
+            pygame.mixer.Sound("./sounds/click_backward.wav"),
+            pygame.mixer.Sound("./sounds/button_hover.wav"))
 
     def __init__(self, screen, clock, ttt_dim, screen_height, screen_width, btn_args, rtn_values):
         self.screen = screen
@@ -222,9 +240,9 @@ class MenuMaker:
                     for i in range(len(self.buttons)):
                         if self.buttons[i].check_for_click(event.pos):
                             if (i == len(self.buttons)-1) and (type(self)==MenuMaker):
-                                MenuMaker.backward_click_sound.play()
+                                MenuMaker.sounds[1].play()
                             else:
-                                MenuMaker.forward_click_sound.play()
+                                MenuMaker.sounds[0].play()
                             return self.return_stuff[i]
 
             self.screen.fill("black")
@@ -233,7 +251,7 @@ class MenuMaker:
                 self.hover_sound_list[i][0] = self.hover_sound_list[i][1]
                 self.hover_sound_list[i][1] = self.buttons[i].hover_detection(pygame.mouse.get_pos())
                 if self.hover_sound_list[i] == [0,1]:
-                    MenuMaker.button_hover_sound.play()
+                    MenuMaker.sounds[2].play()
 
             pygame.display.flip()
             self.clock.tick(60)
@@ -293,6 +311,8 @@ def get_all_menu_args():
 if __name__ == "__main__":
     pygame.init()
     main_args, options_args, grid_args, res_args = get_all_menu_args()
+    bgm = pygame.mixer.Sound("./sounds/bgm.mp3")
+    bgm.play(loops=-1)
     
     ttt_dim = None
     screen_height = None
@@ -310,16 +330,14 @@ if __name__ == "__main__":
             time.sleep(tq.get_length()-0.7)
             running = False
         elif mm_bv == 1:
-            while True:
-                ttt = TicTacToe(*ttt_blueprint)
-                ttt_bv, *ttt_blueprint = ttt.run()
-                if ttt_bv == 0:
-                    running = False
-                    break
-                elif ttt_bv == 1:
-                    continue
-                elif ttt_bv == 2:
-                    break
+            bgm.set_volume(0.05)
+            ttt = TicTacToe(*ttt_blueprint)
+            ttt_bv, *ttt_blueprint = ttt.run()
+            bgm.set_volume(1)
+            if ttt_bv == 0:
+                running = False
+            elif ttt_bv == 1:
+                continue
         elif mm_bv == 2:
             while True:
                 om = MenuMaker(*ttt_blueprint, *options_args)

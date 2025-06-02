@@ -88,9 +88,10 @@ def render_cube(int screen_height,
                 int k1_pixel,
                 int k2_pixel,
                 float A,
-                float B):
+                float B,
+                Dict [str, Tuple[int, int, int]] sub_cube_colors):
     cdef cnp.float32_t cos_a, sin_a, cos_b, sin_b
-    cdef Dict[Tuple[np.float32, np.float32], Tuple[np.float32, Tuple[int, int, int]]] show_points
+    cdef Dict[Tuple[cnp.int32_t, cnp.int32_t], Tuple[cnp.float32_t, str, Tuple[int, int, int]]] show_points
     cdef cnp.ndarray[cnp.float32_t, ndim=1] cube_x, cube_y, cube_z
     cdef cnp.ndarray[cnp.float32_t, ndim=1] x_rotate1, y_rotate1, z_rotate1, x_rotate2, z_rotate_2
     cdef cnp.ndarray[cnp.int32_t, ndim=1] cube_x_proj, cube_y_proj, y_proj_plot
@@ -132,16 +133,16 @@ def render_cube(int screen_height,
             val = show_points.get((cube_x_proj[i], y_proj_plot[i]))
             if val is not None:
                 if z_rotate2[i] < val[0]: # saving only the ones which are infront, i.e. whose z value is minimum
-                    show_points[(cube_x_proj[i], y_proj_plot[i])] = (z_rotate2[i], ((x_shift+2) * 80, (y_shift+2) * 80, (z_shift+2) * 80))
+                    show_points[(cube_x_proj[i], y_proj_plot[i])] = (z_rotate2[i], k, sub_cube_colors[k])
             else:
-                show_points[(cube_x_proj[i], y_proj_plot[i])] = (z_rotate2[i], ((x_shift+2) * 80, (y_shift+2) * 80, (z_shift+2) * 80))
+                show_points[(cube_x_proj[i], y_proj_plot[i])] = (z_rotate2[i], k, sub_cube_colors[k])
 
     x, y = zip(*show_points.keys())
-    _, rgb = zip(*show_points.values())
+    *_, rgb = zip(*show_points.values())
     r, g, b = zip(*rgb)
 
     screen[y, x, 0] = np.array(r)
     screen[y, x, 1] = np.array(g)
     screen[y, x, 2] = np.array(b)
     
-    return screen
+    return screen, show_points

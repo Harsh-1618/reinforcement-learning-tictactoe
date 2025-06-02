@@ -4,7 +4,7 @@ import pygame
 import numpy as np
 from utils import Button, Label
 from pygame.surfarray import make_surface
-from cube import build_cube, render_cube
+from cube.cube_cython import build_cube, render_cube
 
 pygame.init()
 
@@ -41,12 +41,24 @@ class TicTacToe_3d:
                                     pixel_scaling=20,
                                     r1_unit=1.0,
                                     k2_unit=20.0)
+        sub_cubes = ["-1_-1_-1","0_-1_-1","1_-1_-1","-1_0_-1","0_0_-1","1_0_-1","-1_1_-1","0_1_-1","1_1_-1",
+                    "-1_-1_0","0_-1_0","1_-1_0","-1_0_0", "0_0_0", "1_0_0","-1_1_0","0_1_0","1_1_0",
+                    "-1_-1_1","0_-1_1","1_-1_1","-1_0_1","0_0_1","1_0_1","-1_1_1","0_1_1","1_1_1"]
+        self.sub_cube_colors = {cube:(61,61,61) for cube in sub_cubes}
+        self.show_points = None
 
-    def render_xo(self):
-        if (self.A == self.prev_A) and (self.B == self.prev_B):
+    def add_xo_to_grid(self, mouse_down_pos):
+        for key in self.show_points.keys():
+            if key == mouse_down_pos:
+                self.sub_cube_colors[self.show_points[key][1]] = (0, 255, 0)
+                self.render_xo(check=False)
+
+    def render_xo(self, check=True):
+        if check and (self.A == self.prev_A) and (self.B == self.prev_B):
             self.cube_screen = self.prev_cube_screen
         else:
-            self.cube_screen = np.transpose(render_cube(*self.cube_info, self.A, self.B), (1, 0, 2)) # HxW -> WxH, cause pygame is WxH
+            self.cube_screen, self.show_points = render_cube(*self.cube_info, self.A, self.B, self.sub_cube_colors)
+            self.cube_screen = np.transpose(self.cube_screen, (1, 0, 2)) # HxW -> WxH, cause pygame is WxH
             self.prev_A = self.A
             self.prev_B = self.B
             self.prev_cube_screen = self.cube_screen
@@ -55,11 +67,12 @@ class TicTacToe_3d:
 
     def run(self):
         while True:
+            mouse_down_pos = None
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return (0,)
-
-                if event.type == pygame.KEYDOWN:
+                elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         self.B += 0.2
                     elif event.key == pygame.K_RIGHT:
@@ -68,8 +81,14 @@ class TicTacToe_3d:
                         self.A += 0.2
                     elif event.key == pygame.K_DOWN:
                         self.A -= 0.2
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1: # 1 is for left mouse click
+                        mouse_down_pos = event.pos
 
             self.screen.fill("black")
+
+            if mouse_down_pos:
+                self.add_xo_to_grid(mouse_down_pos)
 
             self.render_xo()
 

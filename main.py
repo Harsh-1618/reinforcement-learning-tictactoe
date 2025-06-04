@@ -3,7 +3,7 @@ environ["PYGAME_HIDE_SUPPORT_PROMPT"] = '1'
 import pygame
 from menus import MainMenu, MenuMaker
 from tictactoe import TicTacToe, InfiniteTicTacToe
-from tictactoe_3d import TicTacToe_3d
+from tictactoe_3d import TicTacToe_3d, InfiniteTicTacToe_3d
 import time
 
 
@@ -17,11 +17,11 @@ def make_btn_args(hover_img_path, resize_dim, text):
     return tuple(zip(hover_img_path, resize_dim, text))
 
 def get_all_menu_args():
-    main_hover_img_path = ("./images/play.png", "./images/play.png", "./images/play.png", "./images/options.png", "./images/exit.png")
-    main_resize_dim = ((201,71), (301,71), (201,71), (201,71), (201,71))
-    main_text = ("TicTacToe", "Infinite TicTacToe", "3D TicTacToe", "Options", "Exit")
+    main_hover_img_path = ("./images/play.png", "./images/play.png", "./images/play.png", "./images/play.png", "./images/options.png", "./images/exit.png")
+    main_resize_dim = ((201,61), (301,61), (201,61), (301,61), (201,61), (201,61))
+    main_text = ("TicTacToe", "Infinite TicTacToe", "3D TicTacToe", "Infinite 3D TicTacToe", "Options", "Exit")
     main_btn_args = make_btn_args(main_hover_img_path, main_resize_dim, main_text)
-    main_rtn_values = (1, 2, 3, 4, -1)
+    main_rtn_values = (1, 2, 3, 4, 5, -1)
 
     options_hover_img_path = ("./images/options.png", "./images/exit.png")
     options_resize_dim = ((301,101), (301,101), (201,101))
@@ -93,6 +93,15 @@ if __name__ == "__main__":
             elif ttt_bv == 1:
                 continue
         elif mm_bv == 4:
+            bgm.set_volume(0.05)
+            ttt = InfiniteTicTacToe_3d(*ttt_blueprint)
+            ttt_bv, *ttt_blueprint = ttt.run()
+            bgm.set_volume(1)
+            if ttt_bv == 0:
+                running = False
+            elif ttt_bv == 1:
+                continue
+        elif mm_bv == 5:
             while True:
                 om = MenuMaker(*ttt_blueprint, *options_args)
                 om_bv, *ttt_blueprint = om.run()

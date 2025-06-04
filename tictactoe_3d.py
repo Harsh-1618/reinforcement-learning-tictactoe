@@ -129,6 +129,9 @@ class TicTacToe_3d:
 
         self.is_game_terminated = row_col_channel or planner_diagonals or long_diagonals
 
+    def inf_ttt_3d_extension(self, row_val, col_val, channel_val, sub_cube):
+        pass
+
     def add_xo_to_grid(self, mouse_down_pos):
         for key in self.show_points.keys():
             if key == mouse_down_pos:
@@ -138,6 +141,9 @@ class TicTacToe_3d:
 
                 if (self.logic_grid[row_val, col_val, channel_val] == 0) and (not self.is_game_terminated): # once game is terminated, you can't put xo to empty places
                     self.logic_grid[row_val, col_val, channel_val] = self.player
+
+                    # for infinite ttt
+                    self.inf_ttt_3d_extension(row_val, col_val, channel_val, self.show_points[key][1])
 
                     if self.player == 1:
                         TicTacToe_3d.sounds[0].play()
@@ -241,3 +247,24 @@ class TicTacToe_3d:
             pygame.display.flip()
 
             self.clock.tick(60) # limits FPS to 60
+
+
+class InfiniteTicTacToe_3d(TicTacToe_3d):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.memory_length = 12 # for 3x3x3 = 27, ig 12 is fine.
+        self.memory = {i:None for i in range(self.memory_length)}
+        self.current_number = 0
+    
+    def inf_ttt_3d_extension(self, row_val, col_val, channel_val, sub_cube):
+        if (pos:=self.memory[self.current_number]) is not None:
+            self.logic_grid[pos[0], pos[1], pos[2]] = 0
+            self.sub_cube_colors[pos[3]] = InfiniteTicTacToe_3d.neutral_color
+
+        self.memory[self.current_number] = (row_val, col_val, channel_val, sub_cube)
+        self.current_number = (self.current_number + 1) % self.memory_length
+
+    def reset_parameters(self):
+        super().reset_parameters()
+        self.memory = {i:None for i in range(self.memory_length)}
+        self.current_number = 0

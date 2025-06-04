@@ -137,7 +137,7 @@ class TicTacToe:
         for col in self.cols:
             pygame.draw.line(self.screen, self.col_grid_color, start_pos=col[0], end_pos=col[1], width=TicTacToe.grid_line_width)
 
-    def inf_ttt_extension(self):
+    def inf_ttt_extension(self, row_val, col_val):
         pass
 
     def add_xo_to_grid(self, mouse_down_pos):
@@ -156,9 +156,7 @@ class TicTacToe:
                 self.logic_grid[row_val][col_val] = self.player
 
                 # for infinite ttt
-                self.row_val = row_val
-                self.col_val = col_val
-                self.inf_ttt_extension()
+                self.inf_ttt_extension(row_val, col_val)
 
                 if self.player == 1:
                     TicTacToe.sounds[0].play()
@@ -259,11 +257,11 @@ class InfiniteTicTacToe(TicTacToe):
         self.memory = {i:None for i in range(self.ttt_dim*(self.ttt_dim-1))}
         self.current_number = 0
     
-    def inf_ttt_extension(self):
+    def inf_ttt_extension(self, row_val, col_val):
         if (pos:=self.memory[self.current_number]) is not None:
             self.logic_grid[pos[0], pos[1]] = 0
 
-        self.memory[self.current_number] = (self.row_val, self.col_val)
+        self.memory[self.current_number] = (row_val, col_val)
         self.current_number = (self.current_number + 1) % (self.ttt_dim*(self.ttt_dim-1))
 
     def reset_parameters(self):

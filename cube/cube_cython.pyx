@@ -59,18 +59,18 @@ def build_cube(int screen_height,
     # Making full hollow cube
     # cdef Dict[str, Tuple[cnp.ndarray[cnp.float32_t, ndim=1], cnp.ndarray[cnp.float32_t, ndim=1], cnp.ndarray[cnp.float32_t, ndim=1]]] cube_dict = {} # keys -> xyz position
     cdef Dict[str, Tuple[cnp.ndarray, cnp.ndarray, cnp.ndarray]] cube_dict = {} # keys -> xyz position
-    cdef List[str] sub_cubes = ["-1_-1_-1","0_-1_-1","1_-1_-1","-1_0_-1","0_0_-1","1_0_-1","-1_1_-1","0_1_-1","1_1_-1",
-                "-1_-1_0","0_-1_0","1_-1_0","-1_0_0", "0_0_0", "1_0_0","-1_1_0","0_1_0","1_1_0",
-                "-1_-1_1","0_-1_1","1_-1_1","-1_0_1","0_0_1","1_0_1","-1_1_1","0_1_1","1_1_1"
+    cdef List[str] sub_cubes = ["0_0_0","1_0_0","2_0_0","0_1_0","1_1_0","2_1_0","0_2_0","1_2_0","2_2_0",
+                                "0_0_1","1_0_1","2_0_1","0_1_1","1_1_1","2_1_1","0_2_1","1_2_1","2_2_1",
+                                "0_0_2","1_0_2","2_0_2","0_1_2","1_1_2","2_1_2","0_2_2","1_2_2","2_2_2"
     ]
 
     cdef int x_shift, y_shift, z_shift
     cdef int x_shift_pixel, y_shift_pixel, z_shift_pixel
     for cube in sub_cubes:
         x_shift, y_shift, z_shift = [int(c) for c in cube.split("_")]
-        x_shift_pixel = x_shift*(sub_cube_spacing_pixel + 2*r1_pixel)
-        y_shift_pixel = y_shift*(sub_cube_spacing_pixel + 2*r1_pixel)
-        z_shift_pixel = z_shift*(sub_cube_spacing_pixel + 2*r1_pixel)
+        x_shift_pixel = (x_shift-1)*(sub_cube_spacing_pixel + 2*r1_pixel)
+        y_shift_pixel = (y_shift-1)*(sub_cube_spacing_pixel + 2*r1_pixel)
+        z_shift_pixel = (z_shift-1)*(sub_cube_spacing_pixel + 2*r1_pixel)
 
         cube_dict[cube] = (
             center_cube_x + x_shift_pixel,
@@ -100,8 +100,8 @@ def render_cube(int screen_height,
     cdef Tuple[int, ...] r, g, b
 
     screen[:, :, :] = 0
-    screen[y_displacement, :, :] = 255
-    screen[:, x_displacement, :] = 255
+    # screen[y_displacement, :, :] = 255 # grid lines
+    # screen[:, x_displacement, :] = 255
 
     cos_a = np.cos(A, dtype=np.float32)
     sin_a = np.sin(A, dtype=np.float32)
@@ -110,7 +110,6 @@ def render_cube(int screen_height,
 
     show_points = {}
     for k, cube in cube_dict.items():
-        x_shift, y_shift, z_shift = [int(c) for c in k.split("_")]
         cube_x = cube[0]
         cube_y = cube[1]
         cube_z = cube[2]

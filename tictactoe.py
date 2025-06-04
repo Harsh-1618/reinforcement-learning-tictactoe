@@ -152,7 +152,7 @@ class TicTacToe:
                 col_val = i
 
         if (row_val is not None) and (col_val is not None):
-            if (self.logic_grid[row_val][col_val] == 0) and (not self.is_game_terminated):
+            if (self.logic_grid[row_val][col_val] == 0) and (not self.is_game_terminated): # once game is terminated, you can't put xo to empty places
                 self.logic_grid[row_val][col_val] = self.player
 
                 # for infinite ttt

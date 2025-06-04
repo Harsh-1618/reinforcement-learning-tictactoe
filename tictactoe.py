@@ -256,19 +256,17 @@ class TicTacToe:
 class InfiniteTicTacToe(TicTacToe):
     def __init__(self, *args):
         super().__init__(*args)
-        self.order_grid = -np.ones((self.ttt_dim, self.ttt_dim), dtype=np.int8)
+        self.memory = {i:None for i in range(self.ttt_dim*(self.ttt_dim-1))}
         self.current_number = 0
     
     def inf_ttt_extension(self):
-        prev_position = np.where(self.order_grid == self.current_number)
-        if len(prev_position[0]) != 0:
-            self.order_grid[prev_position[0][0]][prev_position[1][0]] = -1
-            self.logic_grid[prev_position[0][0]][prev_position[1][0]] = 0
+        if (pos:=self.memory[self.current_number]) is not None:
+            self.logic_grid[pos[0], pos[1]] = 0
 
-        self.order_grid[self.row_val][self.col_val] = self.current_number
+        self.memory[self.current_number] = (self.row_val, self.col_val)
         self.current_number = (self.current_number + 1) % (self.ttt_dim*(self.ttt_dim-1))
 
     def reset_parameters(self):
         super().reset_parameters()
-        self.order_grid[:] = -1
+        self.memory = {i:None for i in range(self.ttt_dim*(self.ttt_dim-1))}
         self.current_number = 0

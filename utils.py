@@ -50,12 +50,22 @@ class Button():
 
 
 class Label:
+    text_font = pygame.font.Font("./fonts/you-re-gone/Youre Gone It.otf", 15)
+
+    def __init__(self, screen, x_pos, y_pos, font_color, text):
+        self.screen = screen
+        self.text = self.__class__.text_font.render(text, True, font_color)
+        self.text_rect = self.text.get_rect(center=(x_pos, y_pos))
+
+    def render_text(self):
+        self.screen.blit(self.text, self.text_rect)
+
+
+class Label_with_bg(Label):
     text_font = pygame.font.Font("./fonts/tricky-jimmy/Tricky Jimmy.otf", 30)
 
     def __init__(self, screen, x_pos, y_pos, font_color, resize_dim, text):
-        self.screen = screen
-        self.text = Label.text_font.render(text, True, font_color)
-        self.text_rect = self.text.get_rect(center=(x_pos, y_pos))
+        super(Label_with_bg, self).__init__(screen, x_pos, y_pos, font_color, text)
 
         self.image = pygame.image.load("./images/label.png")
         self.image = pygame.transform.scale(self.image, resize_dim)
@@ -63,4 +73,4 @@ class Label:
 
     def render_text(self):
         self.screen.blit(self.image, self.image_rect)
-        self.screen.blit(self.text, self.text_rect)
+        super(Label_with_bg, self).render_text()

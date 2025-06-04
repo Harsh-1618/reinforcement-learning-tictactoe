@@ -3,7 +3,7 @@ environ["PYGAME_HIDE_SUPPORT_PROMPT"] = '1'
 import copy
 import pygame
 import numpy as np
-from utils import Button, Label
+from utils import Button, Label, Label_with_bg
 from pygame.surfarray import make_surface
 from cube.cube_cython import build_cube, render_cube
 
@@ -70,28 +70,31 @@ class TicTacToe_3d:
         self.wins_x = 0
         self.wins_o = 0
         self.ties = 0
-        self.label_x_color = "white"
-        self.label_o_color = "white"
-        self.label_x = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, self.screen_height//6, self.label_x_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"X wins: {self.wins_x}")
-        self.label_o = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//6, self.label_o_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"O wins: {self.wins_o}")
-        self.label_ties = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 3*self.screen_height//6, "white", (int(120*self.screen_width/640), int(50*self.screen_height/480)), f"Ties: {self.ties}")
+        self.label_x_color = (255,255,255)
+        self.label_o_color = (255,255,255)
+        self.instruction1 = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, (self.screen_height//7)-15, (164,63,79), "Click cube to play")
+        self.instruction2 = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, self.screen_height//7, (164,63,79), "Use arrow keys")
+        self.instruction3 = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, (self.screen_height//7)+15, (164,63,79), "to rotate cube")
+        self.label_x = Label_with_bg(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//7, self.label_x_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"X wins: {self.wins_x}")
+        self.label_o = Label_with_bg(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 3*self.screen_height//7, self.label_o_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"O wins: {self.wins_o}")
+        self.label_ties = Label_with_bg(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 4*self.screen_height//7, (255,255,255), (int(120*self.screen_width/640), int(50*self.screen_height/480)), f"Ties: {self.ties}")
 
-        self.reset_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 4*self.screen_height//6, "./images/dormant.png", "./images/play.png", (int(100*self.screen_width/640), int(50*self.screen_height/480)), "Reset")
-        self.back_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 5*self.screen_height//6, "./images/dormant.png", "./images/exit.png", (int(100*self.screen_width/640), int(50*self.screen_height/480)), "Back")
+        self.reset_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 5*self.screen_height//7, "./images/dormant.png", "./images/play.png", (int(100*self.screen_width/640), int(50*self.screen_height/480)), "Reset")
+        self.back_button = Button(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 6*self.screen_height//7, "./images/dormant.png", "./images/exit.png", (int(100*self.screen_width/640), int(50*self.screen_height/480)), "Back")
 
         self.reset_hover_detection = [0,0] # used to detect the moment mouse hovers on reset button to play hover sound
         self.back_hover_detection = [0,0]
 
     def set_label_xo_color(self):
         if self.wins_x == self.wins_o:
-            self.label_x_color = "white"
-            self.label_o_color = "white"
+            self.label_x_color = (255,255,255)
+            self.label_o_color = (255,255,255)
         elif self.wins_x > self.wins_o:
-            self.label_x_color = "green"
-            self.label_o_color = "red"
+            self.label_x_color = (0,255,0)
+            self.label_o_color = (255,0,0)
         else:
-            self.label_x_color = "red"
-            self.label_o_color = "green"
+            self.label_x_color = (255,0,0)
+            self.label_o_color = (0,255,0)
 
     def check_win(self, row_val, col_val, channel_val):
         win_requirement = self.player * self.ttt_dim
@@ -152,12 +155,12 @@ class TicTacToe_3d:
                             TicTacToe_3d.sounds[3].play().fadeout(3000)
                             self.wins_o += 1
                         self.set_label_xo_color()
-                        self.label_x = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, self.screen_height//6, self.label_x_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"X wins: {self.wins_x}")
-                        self.label_o = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//6, self.label_o_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"O wins: {self.wins_o}")
+                        self.label_x = Label_with_bg(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 2*self.screen_height//7, self.label_x_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"X wins: {self.wins_x}")
+                        self.label_o = Label_with_bg(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 3*self.screen_height//7, self.label_o_color, (int(150*self.screen_width/640), int(50*self.screen_height/480)), f"O wins: {self.wins_o}")
                     elif len(np.where(self.logic_grid==0)[0]) == 0:
                         TicTacToe_3d.sounds[4].play()
                         self.ties += 1
-                        self.label_ties = Label(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 3*self.screen_height//6, "white", (int(120*self.screen_width/640), int(50*self.screen_height/480)), f"Ties: {self.ties}")
+                        self.label_ties = Label_with_bg(self.screen, self.screen_width-(self.screen_width-self.screen_height)//2, 4*self.screen_height//7, (255,255,255), (int(120*self.screen_width/640), int(50*self.screen_height/480)), f"Ties: {self.ties}")
                     self.player = -self.player
 
                 break # will match only once, so no need to continue loop
@@ -219,6 +222,9 @@ class TicTacToe_3d:
 
             self.reset_button.render_button()
             self.back_button.render_button()
+            self.instruction1.render_text()
+            self.instruction2.render_text()
+            self.instruction3.render_text()
             self.label_x.render_text()
             self.label_o.render_text()
             self.label_ties.render_text()

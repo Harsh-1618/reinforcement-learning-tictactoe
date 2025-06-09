@@ -101,8 +101,8 @@ class TicTacToe:
             self.label_x_color = (0,255,0)
             self.label_o_color = (255,0,0)
         else:
-            self.label_x_color = (0,255,0)
-            self.label_o_color = (255,0,0)
+            self.label_x_color = (255,0,0)
+            self.label_o_color = (0,255,0)
 
     def check_win(self, row_val, col_val):
         self.is_game_terminated = np.sum(self.logic_grid[row_val,:]) == self.player * self.ttt_dim or \

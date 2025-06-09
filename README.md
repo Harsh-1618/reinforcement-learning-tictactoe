@@ -9,15 +9,15 @@
     - Ability to change grid size of 2D TicTacToe
 
 ### Some gameplay visuals:
-- Normal 2D TicTacToe:
+Note that the below GIFs are compressed and have low resolution, hence they don't display the true quality of the game.
+###### Normal 2D TicTacToe:
 ![2d_ttt](./readme_media/2d_ttt.gif)
-- Infinite 2D TicTacToe:
+###### Infinite 2D TicTacToe:
 ![2d_inf_ttt](./readme_media/2d_inf_ttt.gif)
-- Normal 3D TicTacToe:
+###### Normal 3D TicTacToe:
 ![3d_ttt](./readme_media/3d_ttt.gif)
-- Infinite 3D TicTacToe:
+###### Infinite 3D TicTacToe:
 ![3d_inf_ttt](./readme_media/3d_inf_ttt.gif)
-
 
 ### Getting started:
 1. **Cloning the repo**:

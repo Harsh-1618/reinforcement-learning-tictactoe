@@ -3,6 +3,7 @@ environ["PYGAME_HIDE_SUPPORT_PROMPT"] = '1'
 import random
 import pygame
 import numpy as np
+from ai.minimax import Minimax
 from utils import Button, Label_with_bg
 
 pygame.init()
@@ -45,6 +46,7 @@ class TicTacToe:
         self.ttt_dim = ttt_dim
         self.screen_height = screen_height
         self.screen_width = screen_width
+        self.minimax = Minimax(ttt_dim)
         
         pygame.display.set_caption(window_name)
         pygame.display.set_icon(pygame.image.load(window_icon))
@@ -54,6 +56,7 @@ class TicTacToe:
         self.logic_grid = np.zeros((self.ttt_dim, self.ttt_dim), dtype=np.int8) # 1 for 'X', -1 for 'O' and 0 if position is available
         self.is_game_terminated = False
         self.player = 1
+        self.ai_player = 1
         self.angles = np.zeros((self.ttt_dim, self.ttt_dim), dtype=np.int16)
 
         # size reduction factor to compensate for grid line width and image rotation
@@ -140,16 +143,21 @@ class TicTacToe:
     def inf_ttt_extension(self, row_val, col_val):
         pass
 
-    def add_xo_to_grid(self, mouse_down_pos):
+    def add_xo_to_grid(self, mouse_down_pos=None):
         row_val = None
         col_val = None
 
-        for i in range(len(self.height_intervals)-1):
-            if (mouse_down_pos[1] > self.height_intervals[i]) and (mouse_down_pos[1] < self.height_intervals[i+1]):
-                row_val = i
-        for i in range(len(self.width_intervals)-1):
-            if (mouse_down_pos[0] > self.width_intervals[i]) and (mouse_down_pos[0] < self.width_intervals[i+1]):
-                col_val = i
+        if mouse_down_pos is None:
+            action = self.minimax.get_action(self.logic_grid, self.ai_player)
+            if action is not None:
+                row_val, col_val = action
+        else:
+            for i in range(len(self.height_intervals)-1):
+                if (mouse_down_pos[1] > self.height_intervals[i]) and (mouse_down_pos[1] < self.height_intervals[i+1]):
+                    row_val = i
+            for i in range(len(self.width_intervals)-1):
+                if (mouse_down_pos[0] > self.width_intervals[i]) and (mouse_down_pos[0] < self.width_intervals[i+1]):
+                    col_val = i
 
         if (row_val is not None) and (col_val is not None):
             if (self.logic_grid[row_val][col_val] == 0) and (not self.is_game_terminated): # once game is terminated, you can't put xo to empty places
@@ -224,6 +232,9 @@ class TicTacToe:
                         return (1,)
 
             self.screen.fill("black")
+
+            if self.player == self.ai_player:
+                self.add_xo_to_grid()
 
             if mouse_down_pos:
                 self.add_xo_to_grid(mouse_down_pos)

@@ -21,7 +21,7 @@ Note that the below GIFs are compressed and have low resolution, hence they don'
 
 ### Getting started:
 1. **Cloning the repo**:
-You can clone the repo by typing `git clone https://github.com/Harsh-1618/reinforcement_learning_tictactoe.git` in the terminal. After cloning, type `python main.py` to run the game.
+You can clone the repo by typing `git clone https://github.com/Harsh-1618/reinforcement_learning_tictactoe.git` in the terminal. After cloning, you need to install dependencies with `pip install -r requirements.txt`. Finally, type `python main.py` to run the game.
 2. **Running executable file**:
 Or after cloning, you can just run `main.exe` by double clicking it if you're on windows.
 

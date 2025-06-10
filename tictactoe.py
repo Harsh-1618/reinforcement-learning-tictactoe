@@ -56,7 +56,7 @@ class TicTacToe:
         self.logic_grid = np.zeros((self.ttt_dim, self.ttt_dim), dtype=np.int8) # 1 for 'X', -1 for 'O' and 0 if position is available
         self.is_game_terminated = False
         self.player = 1
-        self.ai_player = 1
+        self.ai_player = -1
         self.angles = np.zeros((self.ttt_dim, self.ttt_dim), dtype=np.int16)
 
         # size reduction factor to compensate for grid line width and image rotation

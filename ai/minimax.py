@@ -1,6 +1,6 @@
 '''
-Code for minimax algorithm without alpha-beta pruning for 2D and Infinite 2D tictactoe with any 2D grid size.
-Even though you can use it for any grid size, you should NOT use it for grid size other than 3x3 since it's too slow!
+Code for minimax algorithm with alpha-beta pruning for 2D and Infinite 2D tictactoe with any 2D grid size.
+Even though you can use it for any grid size, you should NOT use it for grid size other than 3x3 since it's still too slow!
 Hence, i am not generalizing it for 3D tictactoe variants.
 While this implementation is tailored for tictactoe, it can be easily generalized to any adversarial game.
 
@@ -44,7 +44,7 @@ class Minimax:
             return 1 if player == 1 else -1
         return 0 if (len(np.where(state==0)[0]) == 0) else None
 
-    def get_state_action_value(self, state, player, prev_action=None):
+    def get_state_action_value(self, state, player, prev_action=None, alpha=-float("inf"), beta=float("inf")):
         state_copy = deepcopy(state)
 
         if prev_action is not None:
@@ -59,18 +59,27 @@ class Minimax:
             best_value = -float("inf")
             best_action = None
             for action in self.get_available_actions(state_copy):
-                candidate_value, _ = self.get_state_action_value(state_copy, player, action)
+                candidate_value, _ = self.get_state_action_value(state_copy, player, action, alpha, beta)
                 if candidate_value > best_value:
                     best_value = candidate_value
                     best_action = action
+
+                alpha = max(alpha, candidate_value)
+                if beta <= alpha:
+                    break
         else:
             best_value = float("inf")
             best_action = None
             for action in self.get_available_actions(state_copy):
-                candidate_value, _ = self.get_state_action_value(state_copy, player, action)
+                candidate_value, _ = self.get_state_action_value(state_copy, player, action, alpha, beta)
                 if candidate_value < best_value:
                     best_value = candidate_value
                     best_action = action
+
+                beta = min(beta, candidate_value)
+                if beta <= alpha:
+                    break
+
         return best_value, best_action
 
     def get_action(self, logic_grid, player):

@@ -37,6 +37,8 @@ class TicTacToe:
                 ttt_dim,
                 screen_height,
                 screen_width,
+                ai: None|str,
+                player_first: bool,
                 window_name="TicTacToe",
                 window_icon="./images/grid_icon.png",
                 img_x_path="./images/x_transparent_edited.png",
@@ -46,7 +48,17 @@ class TicTacToe:
         self.ttt_dim = ttt_dim
         self.screen_height = screen_height
         self.screen_width = screen_width
-        self.minimax = Minimax(ttt_dim)
+
+        self.ai = ai
+        self.player = 1
+        if ai is not None:
+            if ai == "minimax":
+                if ttt_dim == 3:
+                    self.ai_model = Minimax(ttt_dim)
+                else:
+                    self.ai = None
+                
+            self.ai_player = -1 if player_first else 1
         
         pygame.display.set_caption(window_name)
         pygame.display.set_icon(pygame.image.load(window_icon))
@@ -55,8 +67,6 @@ class TicTacToe:
         self.col_grid_color = "#101010"
         self.logic_grid = np.zeros((self.ttt_dim, self.ttt_dim), dtype=np.int8) # 1 for 'X', -1 for 'O' and 0 if position is available
         self.is_game_terminated = False
-        self.player = 1
-        self.ai_player = -1
         self.angles = np.zeros((self.ttt_dim, self.ttt_dim), dtype=np.int16)
 
         # size reduction factor to compensate for grid line width and image rotation
@@ -148,7 +158,7 @@ class TicTacToe:
         col_val = None
 
         if mouse_down_pos is None:
-            action = self.minimax.get_action(self.logic_grid, self.ai_player)
+            action = self.ai_model.get_action(self.logic_grid, self.ai_player)
             if action is not None:
                 row_val, col_val = action
         else:
@@ -233,7 +243,7 @@ class TicTacToe:
 
             self.screen.fill("black")
 
-            if self.player == self.ai_player:
+            if (self.ai is not None) and (self.player == self.ai_player):
                 self.add_xo_to_grid()
 
             if mouse_down_pos:

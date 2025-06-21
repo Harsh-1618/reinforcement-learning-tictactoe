@@ -24,10 +24,10 @@ def get_all_menu_args():
     main_rtn_values = (1, 2, 3, 4, 5, -1)
 
     options_hover_img_path = ("./images/options.png", "./images/exit.png")
-    options_resize_dim = ((301,101), (301,101), (201,101))
-    options_text = ("Set Grid Dimension", "Set Game Resolution", "Back")
+    options_resize_dim = ((301,81), (301,81), (301,81), (201,81))
+    options_text = ("Set Grid Dimension", "Set Game Resolution", "Gameplay Settings", "Back")
     options_btn_args = make_btn_args(options_hover_img_path, options_resize_dim, options_text)
-    options_rtn_values = (1, 2, -1)
+    options_rtn_values = (1, 2, 3, -1)
 
     grid_hover_img_path = ("./images/options.png", "./images/exit.png")
     grid_resize_dim = ((201,51),)
@@ -41,22 +41,43 @@ def get_all_menu_args():
     res_btn_args = make_btn_args(res_hover_img_path, res_resize_dim, res_text)
     res_rtn_values = ((640,480), (720,540), (800,600), (1280,640), (1280,720), (1920,1080), -1)
 
-    return (main_btn_args, main_rtn_values), (options_btn_args, options_rtn_values), (grid_btn_args, grid_rtn_values), (res_btn_args, res_rtn_values)
+    you_first_hover_img_path = ("./images/options.png",)
+    you_first_resize_dim = ((211,71),)
+    you_first_text = ("p vs MiniMax AI",)
+    you_first_btn_args = make_btn_args(you_first_hover_img_path, you_first_resize_dim, you_first_text)
+    you_first_rtn_values = ("p_minimax",)
+
+    oneVone_hover_img_path = ("./images/options.png", "./images/exit.png")
+    oneVone_resize_dim = ((101,71), (101,71))
+    oneVone_text = ("p vs p", "Back")
+    oneVone_btn_args = make_btn_args(oneVone_hover_img_path, oneVone_resize_dim, oneVone_text)
+    oneVone_rtn_values = ("p_p", -1)
+
+    ai_first_hover_img_path = ("./images/options.png",)
+    ai_first_resize_dim = ((211,71),)
+    ai_first_text = ("MiniMax AI vs p",)
+    ai_first_btn_args = make_btn_args(ai_first_hover_img_path, ai_first_resize_dim, ai_first_text)
+    ai_first_rtn_values = ("minimax_p",)
+
+    return (main_btn_args, main_rtn_values), (options_btn_args, options_rtn_values), (grid_btn_args, grid_rtn_values), (res_btn_args, res_rtn_values), \
+        (you_first_btn_args, you_first_rtn_values), (oneVone_btn_args, oneVone_rtn_values), (ai_first_btn_args, ai_first_rtn_values)
 
 
 if __name__ == "__main__":
     pygame.init()
-    main_args, options_args, grid_args, res_args = get_all_menu_args()
+    main_args, options_args, grid_args, res_args, you_first_args, oneVone_args, ai_first_args = get_all_menu_args()
     bgm = pygame.mixer.Sound("./sounds/bgm.mp3")
     bgm.play(loops=-1)
     
     ttt_dim = None
     screen_height = None
     screen_width = None
+    ai = None
+    player_first = None
 
     running = True
     while running:
-        mm = MainMenu(ttt_dim, screen_height, screen_width, *main_args)
+        mm = MainMenu(ttt_dim, screen_height, screen_width, (main_args,))
         mm_bv, *ttt_blueprint = mm.run() # mm_bv -> main menu button value
         if mm_bv == 0:
             running = False
@@ -67,7 +88,7 @@ if __name__ == "__main__":
             running = False
         elif mm_bv == 1:
             bgm.set_volume(0.05)
-            ttt = TicTacToe(*ttt_blueprint)
+            ttt = TicTacToe(*ttt_blueprint, ai, player_first)
             ttt_bv, *ttt_blueprint = ttt.run()
             bgm.set_volume(1)
             if ttt_bv == 0:
@@ -76,7 +97,7 @@ if __name__ == "__main__":
                 continue
         elif mm_bv == 2:
             bgm.set_volume(0.05)
-            ttt = InfiniteTicTacToe(*ttt_blueprint)
+            ttt = InfiniteTicTacToe(*ttt_blueprint, ai, player_first)
             ttt_bv, *ttt_blueprint = ttt.run()
             bgm.set_volume(1)
             if ttt_bv == 0:
@@ -85,7 +106,7 @@ if __name__ == "__main__":
                 continue
         elif mm_bv == 3:
             bgm.set_volume(0.05)
-            ttt = TicTacToe_3d(*ttt_blueprint)
+            ttt = TicTacToe_3d(*ttt_blueprint, ai, player_first)
             ttt_bv, *ttt_blueprint = ttt.run()
             bgm.set_volume(1)
             if ttt_bv == 0:
@@ -94,7 +115,7 @@ if __name__ == "__main__":
                 continue
         elif mm_bv == 4:
             bgm.set_volume(0.05)
-            ttt = InfiniteTicTacToe_3d(*ttt_blueprint)
+            ttt = InfiniteTicTacToe_3d(*ttt_blueprint, player_first)
             ttt_bv, *ttt_blueprint = ttt.run()
             bgm.set_volume(1)
             if ttt_bv == 0:
@@ -103,7 +124,7 @@ if __name__ == "__main__":
                 continue
         elif mm_bv == 5:
             while True:
-                om = MenuMaker(*ttt_blueprint, *options_args)
+                om = MenuMaker(*ttt_blueprint, (options_args,))
                 om_bv, *ttt_blueprint = om.run()
                 if om_bv == 0:
                     running = False
@@ -111,7 +132,7 @@ if __name__ == "__main__":
                 elif om_bv == -1:
                     break
                 elif om_bv == 1:
-                    gm = MenuMaker(*ttt_blueprint, *grid_args)
+                    gm = MenuMaker(*ttt_blueprint, (grid_args,))
                     gm_bv, *ttt_blueprint = gm.run()
                     if gm_bv == 0:
                         running = False
@@ -122,7 +143,7 @@ if __name__ == "__main__":
                         ttt_dim = gm_bv
                         break
                 elif om_bv == 2:
-                    rm = MenuMaker(*ttt_blueprint, *res_args)
+                    rm = MenuMaker(*ttt_blueprint, (res_args,))
                     rm_bv, *ttt_blueprint = rm.run()
                     if rm_bv == 0:
                         running = False
@@ -131,6 +152,25 @@ if __name__ == "__main__":
                         continue
                     else:
                         screen_width, screen_height = rm_bv
+                        break
+                elif om_bv == 3:
+                    gsm = MenuMaker(*ttt_blueprint, (you_first_args, oneVone_args, ai_first_args))
+                    gsm_bv, *ttt_blueprint = gsm.run()
+                    if gsm_bv == 0:
+                        running = False
+                        break
+                    elif gsm_bv == -1:
+                        continue
+                    else:
+                        l,r = gsm_bv.split("_")
+                        if (l=="p") and (r=="p"):
+                            ai = None
+                        elif l=="p":
+                            ai = r
+                            player_first = True
+                        else:
+                            ai = l
+                            player_first = False
                         break
 
     pygame.quit()

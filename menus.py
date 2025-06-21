@@ -22,19 +22,21 @@ class MenuMaker:
                 ttt_dim,
                 screen_height,
                 screen_width,
-                btn_args,
-                rtn_values):
+                args):
         self.screen = screen
         self.clock = clock
         self.screen_height = screen_height
         self.screen_width = screen_width
-        self.rtn_values = rtn_values
 
         self.button_res_resize_height = self.screen_height/480 # 640x480 standard resolution
         self.button_res_resize_width = self.screen_width/640
 
-        self.buttons = [Button(self.screen, self.screen_width//2, (i+1)*self.screen_height//(len(btn_args)+1), "./images/dormant.png", btn_args[i][0], (int(btn_args[i][1][0]*self.button_res_resize_width), int(btn_args[i][1][1]*self.button_res_resize_height)), btn_args[i][2]) for i in (range(len(btn_args)))]
-        self.return_stuff = [(rtn_values[i], self.screen, self.clock, ttt_dim, self.screen_height, self.screen_width) for i in (range(len(rtn_values)))]
+        self.buttons = []
+        self.return_stuff = []
+        for idx, arg in enumerate(args):
+            btn_args, rtn_values = arg
+            self.buttons.extend([Button(self.screen, (idx+1)*self.screen_width//(len(args)+1), (i+1)*self.screen_height//(len(btn_args)+1), "./images/dormant.png", btn_args[i][0], (int(btn_args[i][1][0]*self.button_res_resize_width), int(btn_args[i][1][1]*self.button_res_resize_height)), btn_args[i][2]) for i in (range(len(btn_args)))])
+            self.return_stuff.extend([(rtn_values[i], self.screen, self.clock, ttt_dim, self.screen_height, self.screen_width) for i in (range(len(rtn_values)))])
 
         self.hover_sound_list = [[0,0] for i in range(len(self.buttons))] # used to detect the moment mouse hovers on any button to play hover sound
         # if we play when mouse is on button, then it will play the sound indefinately till the mouse is on the button.
@@ -72,7 +74,7 @@ class MenuMaker:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     for i in range(len(self.buttons)):
                         if self.buttons[i].check_for_click(event.pos):
-                            if (i == len(self.buttons)-1) and (type(self)==MenuMaker):
+                            if (self.return_stuff[i][0] == -1) and (type(self)==MenuMaker):
                                 MenuMaker.sounds[1].play()
                             else:
                                 MenuMaker.sounds[0].play()
@@ -101,8 +103,7 @@ class MainMenu(MenuMaker):
                 ttt_dim,
                 screen_height,
                 screen_width,
-                btn_args,
-                rtn_values,
+                args,
                 window_name="TicTacToe",
                 window_icon="./images/main_icon.png"):
         self.ttt_dim = 3 if ttt_dim is None else ttt_dim
@@ -115,4 +116,4 @@ class MainMenu(MenuMaker):
         pygame.display.set_caption(window_name)
         pygame.display.set_icon(pygame.image.load(window_icon))
 
-        super().__init__(self.screen, self.clock, self.ttt_dim, self.screen_height, self.screen_width, btn_args, rtn_values)
+        super().__init__(self.screen, self.clock, self.ttt_dim, self.screen_height, self.screen_width, args)

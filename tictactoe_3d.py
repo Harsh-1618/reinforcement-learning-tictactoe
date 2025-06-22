@@ -34,6 +34,8 @@ class TicTacToe_3d:
             ttt_dim,
             screen_height,
             screen_width,
+            ai: None|str,
+            player_first: bool,
             window_name="3D TicTacToe",
             window_icon="./images/grid_icon.png"):
         self.screen = screen

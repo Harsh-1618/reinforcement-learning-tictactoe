@@ -41,11 +41,11 @@ def get_all_menu_args():
     res_btn_args = make_btn_args(res_hover_img_path, res_resize_dim, res_text)
     res_rtn_values = ((640,480), (720,540), (800,600), (1280,640), (1280,720), (1920,1080), -1)
 
-    you_first_hover_img_path = ("./images/options.png",)
+    you_first_hover_img_path = ("./images/options.png", "./images/options.png")
     you_first_resize_dim = ((211,71),)
-    you_first_text = ("p vs MiniMax AI",)
+    you_first_text = ("p vs MiniMax AI", "p vs MCTS")
     you_first_btn_args = make_btn_args(you_first_hover_img_path, you_first_resize_dim, you_first_text)
-    you_first_rtn_values = ("p_minimax",)
+    you_first_rtn_values = ("p_minimax", "p_mcts")
 
     oneVone_hover_img_path = ("./images/options.png", "./images/exit.png")
     oneVone_resize_dim = ((101,71), (101,71))
@@ -53,11 +53,11 @@ def get_all_menu_args():
     oneVone_btn_args = make_btn_args(oneVone_hover_img_path, oneVone_resize_dim, oneVone_text)
     oneVone_rtn_values = ("p_p", -1)
 
-    ai_first_hover_img_path = ("./images/options.png",)
+    ai_first_hover_img_path = ("./images/options.png", "./images/options.png")
     ai_first_resize_dim = ((211,71),)
-    ai_first_text = ("MiniMax AI vs p",)
+    ai_first_text = ("MiniMax AI vs p", "MCTS vs p")
     ai_first_btn_args = make_btn_args(ai_first_hover_img_path, ai_first_resize_dim, ai_first_text)
-    ai_first_rtn_values = ("minimax_p",)
+    ai_first_rtn_values = ("minimax_p", "mcts_p")
 
     return (main_btn_args, main_rtn_values), (options_btn_args, options_rtn_values), (grid_btn_args, grid_rtn_values), (res_btn_args, res_rtn_values), \
         (you_first_btn_args, you_first_rtn_values), (oneVone_btn_args, oneVone_rtn_values), (ai_first_btn_args, ai_first_rtn_values)

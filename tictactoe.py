@@ -4,6 +4,7 @@ import random
 import pygame
 import numpy as np
 from ai.minimax import Minimax
+from ai.mcts import MCTS
 from utils import Button, Label_with_bg
 
 pygame.init()
@@ -57,6 +58,8 @@ class TicTacToe:
                     self.ai_model = Minimax(ttt_dim)
                 else:
                     self.ai = None
+            elif ai == "mcts":
+                self.ai_model = MCTS(ttt_dim)
                 
             self.ai_player = -1 if player_first else 1
         

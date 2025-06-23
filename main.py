@@ -115,7 +115,7 @@ if __name__ == "__main__":
                 continue
         elif mm_bv == 4:
             bgm.set_volume(0.05)
-            ttt = InfiniteTicTacToe_3d(*ttt_blueprint, player_first)
+            ttt = InfiniteTicTacToe_3d(*ttt_blueprint, ai, player_first)
             ttt_bv, *ttt_blueprint = ttt.run()
             bgm.set_volume(1)
             if ttt_bv == 0:

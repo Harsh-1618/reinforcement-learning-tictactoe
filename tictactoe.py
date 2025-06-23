@@ -153,7 +153,16 @@ class TicTacToe:
         for col in self.cols:
             pygame.draw.line(self.screen, self.col_grid_color, start_pos=col[0], end_pos=col[1], width=TicTacToe.grid_line_width)
 
-    def inf_ttt_extension(self, row_val, col_val):
+    def inf_ttt_extension_pop(self):
+        '''
+        pops the appropriate x or o for the current game state
+        '''
+        pass
+
+    def inf_ttt_extension_push(self, row_val, col_val):
+        '''
+        pushes the appropriate x or o for the current game state and (row_val, col_val)
+        '''
         pass
 
     def add_xo_to_grid(self, mouse_down_pos=None):
@@ -161,9 +170,14 @@ class TicTacToe:
         col_val = None
 
         if mouse_down_pos is None:
+            # we first pop the appropriate x or o from logic grid before getting an action from AI
+            # this ensures that AI does not get "fooled" into making a move which it thought was winning, only
+            # to end up not winning cause one of the positions which contributed to the win suddenly disappeared.
+            # that being said, it just give that AI a memory of '1', which is still limited and far from what it
+            # might need to become an unbeatable Inf tictactoe AI.
+            self.inf_ttt_extension_pop()
             action = self.ai_model.get_action(self.logic_grid, self.ai_player)
-            if action is not None:
-                row_val, col_val = action
+            row_val, col_val = action
         else:
             for i in range(len(self.height_intervals)-1):
                 if (mouse_down_pos[1] > self.height_intervals[i]) and (mouse_down_pos[1] < self.height_intervals[i+1]):
@@ -176,8 +190,12 @@ class TicTacToe:
             if (self.logic_grid[row_val][col_val] == 0) and (not self.is_game_terminated): # once game is terminated, you can't put xo to empty places
                 self.logic_grid[row_val][col_val] = self.player
 
-                # for infinite ttt
-                self.inf_ttt_extension(row_val, col_val)
+                # for infinite ttt, we pop the appropriate x or o from logic grid before we push.
+                if (self.ai is None) or (self.player != self.ai_player):
+                    self.inf_ttt_extension_pop()
+
+                # for infinite ttt, we push the corresponding row_val and col_val to logic_grid
+                self.inf_ttt_extension_push(row_val, col_val)
 
                 if self.player == 1:
                     TicTacToe.sounds[0].play()
@@ -246,7 +264,9 @@ class TicTacToe:
 
             self.screen.fill("black")
 
-            if (self.ai is not None) and (self.player == self.ai_player):
+            # don't allow AI to make move once game is terminated with human win (very small possibility but not zero, especially in Inf version)
+            # also don't allow AI to make move once the grid is filled by last move being of human, which means next move will be of AI on filled grid.
+            if (self.ai is not None) and (self.player == self.ai_player) and (not self.is_game_terminated) and (len(np.where(self.logic_grid==0)[0]) != 0):
                 self.add_xo_to_grid()
 
             if mouse_down_pos:
@@ -281,10 +301,11 @@ class InfiniteTicTacToe(TicTacToe):
         self.memory = {i:None for i in range(self.ttt_dim*(self.ttt_dim-1))}
         self.current_number = 0
     
-    def inf_ttt_extension(self, row_val, col_val):
+    def inf_ttt_extension_pop(self):
         if (pos:=self.memory[self.current_number]) is not None:
             self.logic_grid[pos[0], pos[1]] = 0
 
+    def inf_ttt_extension_push(self, row_val, col_val):
         self.memory[self.current_number] = (row_val, col_val)
         self.current_number = (self.current_number + 1) % (self.ttt_dim*(self.ttt_dim-1))
 
